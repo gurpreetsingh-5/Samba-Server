@@ -23,4 +23,22 @@ sudo systemctl enable smb --now
 sudo systemctl enable nmb --now
 sudo systemctl restart smb nmb
 
+sudo useradd sambauser
+sudo smbpasswd -a sambauser
+
+For Client---
+
+sudo dnf install samba-client cifs-utils
+smbclient -L //server-ip -U username
+# Mount Samba Share Temporarily
+sudo mkdir /mnt/sambashare
+sudo mount -t cifs //server-ip/shared /mnt/sambashare -o username=sambauser
+# Mount Samba Share Permanently (add to fstab)
+sudo vi /etc/fstab
+//server-ip/shared  /mnt/sambashare  cifs  username=sambauser,password=yourpassword,uid=1000,gid=1000,vers=3.0  0  0
+sudo mount -a
+
+sudo systemctl status smb nmb
+
+sudo chcon -t samba_share_t /samba/share  #If you have SELinux enabled, you may need to set proper contexts:
 ```
