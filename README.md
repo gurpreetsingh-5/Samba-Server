@@ -48,59 +48,44 @@ testparm
 systemctl start smb nmb
 systemctl status smb nmb
 
+\\<server-site-ip>  # in Windows click search and type then enter
 
 
-[shared]
-   comment = Samba Share
-   path = /samba/share
-   browsable = yes
-   writable = yes
-   guest ok = yes
-   read only = no
-   create mask = 0777
-   directory mask = 0777
+For client---
 
-[global]
-    workgroup = SAMBA
-    server string = Samba Server %v
-    netbios name = rhel9-samba
-    security = user
-    map to guest = bad user
-    dns proxy = no
+sudo dnf install samba-client cifs-utils -y
+mkdir -p /mnt/samba/apps
+sudo mount -t cifs //server-ip/Apps /mnt/samba/apps
+df -h
 
-[shared]
-    path = /samba/share
-    browsable = yes
-    writable = yes
-    guest ok = no
-    read only = no
-    create mask = 0777
+Secure Samba server---
+(in server site)
+
+groupadd smbgrp
+useradd -M -d /samba_secure -s /usr/sbin/nologin -G smbgrp sambauser
+id sambauser
+mkdir /samba_secure
+ls -ltr
+chown sambauser:smbgrp samba_secure
+chmod 2770 samba_secure
+chcon -t samba_share_t /samba_secure
+smbpasswd -a sambauser
+smbpasswd -e sambauser
+vi /ete/samba/smb.conf
+[Secure]
+        path = /samba_secure
+        valid users = @smbgrp
+        guest pk = no
+        writable = yes
+        browsable = yes
+
+systemctl restart smb nmb
+systemctl status smb nmb
+
+\\<server-site-ip>\Secure  # in Windows click search and type then enter
+username:-----
+password:-----
 
 
 
-testparm
-sudo systemctl enable smb --now
-sudo systemctl enable nmb --now
-sudo systemctl restart smb nmb
-sudo systemctl status smb nmb
-
-sudo useradd sambauser
-sudo smbpasswd -a sambauser
-
-For Client---
-
-sudo dnf install samba-client cifs-utils
-sudo dnf install samba samba-common samba-client
-smbclient -L //server-ip -U username
-# Mount Samba Share Temporarily
-sudo mkdir /mnt/sambashare
-sudo mount -t cifs //server-ip/shared /mnt/sambashare -o username=sambauser
-# Mount Samba Share Permanently (add to fstab)
-sudo vi /etc/fstab
-//server-ip/shared  /mnt/sambashare  cifs  username=sambauser,password=yourpassword,uid=1000,gid=100   0,vers=3.0  0  0
-sudo mount -a
-
-sudo systemctl status smb nmb
-
-sudo chcon -t samba_share_t /samba/share  #If you have SELinux enabled, you may need to set proper contexts:
 ```
