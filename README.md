@@ -8,7 +8,7 @@ sudo chmod -R 0777 /samba/share
 sudo chown -R nobody:nobody /samba/share
 sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.bak
 sudo vi /etc/samba/smb.conf
-[shared]
+<!-- [shared]
    comment = Samba Share
    path = /samba/share
    browsable = yes
@@ -17,6 +17,23 @@ sudo vi /etc/samba/smb.conf
    read only = no
    create mask = 0777
    directory mask = 0777
+-->
+[global]
+    workgroup = WORKGROUP
+    server string = Samba Server %v
+    netbios name = rhel9-samba
+    security = user
+    map to guest = bad user
+    dns proxy = no
+
+[shared]
+    path = /samba/share
+    browsable = yes
+    writable = yes
+    guest ok = no
+    read only = no
+    create mask = 0777
+
 sudo firewall-cmd --permanent --add-service=samba
 sudo firewall-cmd --reload
 sudo systemctl enable smb --now
