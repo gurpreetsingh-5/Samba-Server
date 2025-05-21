@@ -6,9 +6,9 @@ sudo dnf install samba samba-common samba-client
 sudo mkdir -p /samba/share
 sudo chmod -R 0777 /samba/share
 sudo chown -R nobody:nobody /samba/share
-sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.bak
+sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.copy
 sudo vi /etc/samba/smb.conf
-<!-- [shared]
+[shared]
    comment = Samba Share
    path = /samba/share
    browsable = yes
@@ -17,9 +17,9 @@ sudo vi /etc/samba/smb.conf
    read only = no
    create mask = 0777
    directory mask = 0777
--->
+
 [global]
-    workgroup = WORKGROUP
+    workgroup = SAMBA
     server string = Samba Server %v
     netbios name = rhel9-samba
     security = user
@@ -33,12 +33,18 @@ sudo vi /etc/samba/smb.conf
     guest ok = no
     read only = no
     create mask = 0777
-
+sudo systemctl status firewalld
+sudo dnf install firewalld # if not present
 sudo firewall-cmd --permanent --add-service=samba
 sudo firewall-cmd --reload
+sudo systemctl status firewalld
+
+
+testparm
 sudo systemctl enable smb --now
 sudo systemctl enable nmb --now
 sudo systemctl restart smb nmb
+sudo systemctl status smb nmb
 
 sudo useradd sambauser
 sudo smbpasswd -a sambauser
