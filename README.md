@@ -82,10 +82,25 @@ vi /ete/samba/smb.conf
 systemctl restart smb nmb
 systemctl status smb nmb
 
+Foe Windows--
 \\<server-site-ip>\Secure  # in Windows click search and type then enter
 username:-----
 password:-----
 
+for redhat---
+sudo mkdir -p /mnt/samba/secure
+sudo nano /etc/samba/secure_credentials
+username=sambauser
+password=yourpassword
+sudo chmod 600 /etc/samba/secure_credentials
+sudo mount -t cifs //server-ip/Secure /mnt/samba/secure -o credentials=/etc/samba/secure_credentials,uid=$(id -u),gid=$(id -g),dir_mode=0770,file_mode=0770
+df -h
+ls -l /mnt/samba/secure
+
+For Permanent Mount (optional)
+Add to /etc/fstab:
+//server-ip/Secure  /mnt/samba/secure  cifs  credentials=/etc/samba/secure_credentials,uid=$(id -u),gid=$(id -g),dir_mode=0770,file_mode=0770  0  0
+sudo mount -a
 
 
 ```
